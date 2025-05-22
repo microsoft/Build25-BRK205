@@ -1,0 +1,29 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/variableLibrary/definition/variables/1.0.0/schema.json",
+  "variables": [
+    {
+      "name": "unified_default",
+      "note": "",
+      "type": "String",
+      "value": "abfss://Helix-Dev-Storage@dxt-onelake.dfs.fabric.microsoft.com/Unified.Lakehouse/"
+    },
+    {
+      "name": "marketing_prod",
+      "note": "",
+      "type": "String",
+      "value": "abfss://DEMO-SOURCE@dxt-onelake.dfs.fabric.microsoft.com/Marketing.Lakehouse/"
+    },
+    {
+      "name": "finance_prod",
+      "note": "",
+      "type": "String",
+      "value": "abfss://DEMO-SOURCE@dxt-onelake.dfs.fabric.microsoft.com/Finance.Lakehouse/"
+    },
+    {
+      "name": "hr_prod",
+      "note": "",
+      "type": "String",
+      "value": "abfss://DEMO-SOURCE@dxt-onelake.dfs.fabric.microsoft.com/HR.Lakehouse/"
+    }
+  ]
+}

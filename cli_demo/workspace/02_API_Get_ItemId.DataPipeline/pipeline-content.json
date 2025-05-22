@@ -1,0 +1,257 @@
+{
+  "properties": {
+    "activities": [
+      {
+        "name": "Until Is End State",
+        "type": "Until",
+        "dependsOn": [],
+        "typeProperties": {
+          "expression": {
+            "value": "@equals(variables('IsEndState'), true)",
+            "type": "Expression"
+          },
+          "activities": [
+            {
+              "name": "Get Workspace Items",
+              "type": "WebActivity",
+              "dependsOn": [],
+              "policy": {
+                "timeout": "0.1:00:00",
+                "retry": 0,
+                "retryIntervalInSeconds": 30,
+                "secureOutput": false,
+                "secureInput": false
+              },
+              "typeProperties": {
+                "method": "GET",
+                "headers": {
+                  "Content-Type": "application/json"
+                },
+                "relativeUrl": {
+                  "value": "/v1/workspaces/@{pipeline().parameters.workspace_id}/items?type=@{pipeline().parameters.item_type}",
+                  "type": "Expression"
+                }
+              },
+              "externalReferences": {
+                "connection": "a8f5b854-acce-4de9-9c2c-47b20628b246"
+              }
+            },
+            {
+              "name": "Is Throttled",
+              "type": "IfCondition",
+              "dependsOn": [
+                {
+                  "activity": "Get Workspace Items",
+                  "dependencyConditions": [
+                    "Failed"
+                  ]
+                }
+              ],
+              "typeProperties": {
+                "expression": {
+                  "value": "@equals(activity('Get Workspace Items').output.errorCode, 'RequestBlocked')",
+                  "type": "Expression"
+                },
+                "ifFalseActivities": [
+                  {
+                    "name": "Fail",
+                    "type": "Fail",
+                    "dependsOn": [
+                      {
+                        "activity": "Fail - Set IsEndState True",
+                        "dependencyConditions": [
+                          "Succeeded"
+                        ]
+                      }
+                    ],
+                    "typeProperties": {
+                      "message": {
+                        "value": "@activity('Get Workspace Items').output.message",
+                        "type": "Expression"
+                      },
+                      "errorCode": {
+                        "value": "@activity('Get Workspace Items').output.errorCode",
+                        "type": "Expression"
+                      }
+                    }
+                  },
+                  {
+                    "name": "Fail - Set IsEndState True",
+                    "type": "SetVariable",
+                    "dependsOn": [],
+                    "policy": {
+                      "secureOutput": false,
+                      "secureInput": false
+                    },
+                    "typeProperties": {
+                      "variableName": "IsEndState",
+                      "value": true
+                    }
+                  }
+                ],
+                "ifTrueActivities": [
+                  {
+                    "name": "Fail - Set IsEndState False",
+                    "type": "SetVariable",
+                    "dependsOn": [],
+                    "policy": {
+                      "secureOutput": false,
+                      "secureInput": false
+                    },
+                    "typeProperties": {
+                      "variableName": "IsEndState",
+                      "value": false
+                    }
+                  },
+                  {
+                    "name": "Retry Wait",
+                    "type": "Wait",
+                    "dependsOn": [
+                      {
+                        "activity": "Fail - Set IsEndState False",
+                        "dependencyConditions": [
+                          "Succeeded"
+                        ]
+                      }
+                    ],
+                    "typeProperties": {
+                      "waitTimeInSeconds": {
+                        "value": "@int(activity('Get Workspace Items').output.ResponseHeaders['Retry-After'])",
+                        "type": "Expression"
+                      }
+                    }
+                  },
+                  {
+                    "name": "Retry If Retry-After Missing",
+                    "type": "Wait",
+                    "dependsOn": [
+                      {
+                        "activity": "Retry Wait",
+                        "dependencyConditions": [
+                          "Failed"
+                        ]
+                      }
+                    ],
+                    "typeProperties": {
+                      "waitTimeInSeconds": 60
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "name": "Success - Set IsEndState True",
+              "type": "SetVariable",
+              "dependsOn": [
+                {
+                  "activity": "Get Workspace Items",
+                  "dependencyConditions": [
+                    "Succeeded"
+                  ]
+                }
+              ],
+              "policy": {
+                "secureOutput": false,
+                "secureInput": false
+              },
+              "typeProperties": {
+                "variableName": "IsEndState",
+                "value": true
+              }
+            },
+            {
+              "name": "On Skip Wait 1 Second",
+              "description": "Adding a skip activity will allow the current loop to succeed if the notebook fails.  Refer to : https://techcommunity.microsoft.com/t5/azure-data-factory-blog/understanding-pipeline-failures-and-error-handling-2/ba-p/2308983",
+              "type": "Wait",
+              "dependsOn": [
+                {
+                  "activity": "Success - Set IsEndState True",
+                  "dependencyConditions": [
+                    "Skipped"
+                  ]
+                }
+              ],
+              "typeProperties": {
+                "waitTimeInSeconds": 1
+              }
+            }
+          ],
+          "timeout": "0.1:00:00"
+        }
+      },
+      {
+        "name": "For Each Workspace Item",
+        "type": "ForEach",
+        "dependsOn": [
+          {
+            "activity": "Until Is End State",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ],
+        "typeProperties": {
+          "items": {
+            "value": "@activity('Get Workspace Items').output.value",
+            "type": "Expression"
+          },
+          "activities": [
+            {
+              "name": "If Display Name Equals Item Name",
+              "type": "IfCondition",
+              "dependsOn": [],
+              "typeProperties": {
+                "expression": {
+                  "value": "@equals(item().displayName, pipeline().parameters.item_name)",
+                  "type": "Expression"
+                },
+                "ifFalseActivities": [],
+                "ifTrueActivities": [
+                  {
+                    "name": "Set item_id",
+                    "type": "SetVariable",
+                    "dependsOn": [],
+                    "policy": {
+                      "secureOutput": false,
+                      "secureInput": false
+                    },
+                    "typeProperties": {
+                      "variableName": "pipelineReturnValue",
+                      "value": [
+                        {
+                          "key": "item_id",
+                          "value": {
+                            "type": "Expression",
+                            "content": "@item().id"
+                          }
+                        }
+                      ],
+                      "setSystemVariable": true
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "parameters": {
+      "workspace_id": {
+        "type": "string"
+      },
+      "Item_type": {
+        "type": "string"
+      },
+      "Item_name": {
+        "type": "string"
+      }
+    },
+    "variables": {
+      "IsEndState": {
+        "type": "Boolean",
+        "defaultValue": false
+      }
+    }
+  }
+}

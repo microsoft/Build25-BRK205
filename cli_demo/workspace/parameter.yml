@@ -1,0 +1,24 @@
+find_replace:
+    # Default Lakehouse Item Guid
+    - find_value: "7b1741d0-647b-401a-9035-7f55da48199b"
+      replace_value:
+        dev: "7b1741d0-647b-401a-9035-7f55da48199b"
+        prod: "92d7dea8-843a-4151-b9c5-721847979776"
+      item_type: "Notebook"
+    
+    # Default Lakehouse Workspace Guid
+    - find_value: "4c33a979-76f8-49c4-b2d6-fd32e4d5648e"
+      replace_value:
+        dev: "11adbfa2-4c2a-4113-997b-4f8e7c44bd87"
+        prod: "9cb3df97-e4f1-4653-82ad-61f89493bf14"
+      item_type: "Notebook"
+
+spark_pool:
+  - instance_pool_id: "41ed29ff-9f05-4ce1-a86e-5b11f9cc0a82"
+    replace_value:
+      dev:
+        type: "Capacity"
+        name: "CapacityPool_Large_Static"
+      prod:
+        type: "Capacity"
+        name: "CapacityPool_Large_Static"

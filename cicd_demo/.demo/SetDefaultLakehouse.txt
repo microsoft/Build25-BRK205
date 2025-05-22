@@ -1,0 +1,8 @@
+set CustomerHolidaysLoader.Notebook -f -q lakehouse -i {
+  "known_lakehouses": [
+    {"id": "0489d287-221b-4392-abb1-5e8e1d3baeac"}
+  ],
+  "default_lakehouse": "0489d287-221b-4392-abb1-5e8e1d3baeac",
+  "default_lakehouse_name": "CustomerHolidays",
+  "default_lakehouse_workspace_id": "6ec45eb9-402f-4d44-a971-d6185a55685a"
+}

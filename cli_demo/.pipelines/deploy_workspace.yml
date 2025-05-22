@@ -1,0 +1,42 @@
+trigger:
+  branches:
+    include: ["dev", "main"]
+  batch: true
+
+jobs:
+  - job: Deploy
+    pool:
+      vmImage: windows-latest
+    steps:
+      - checkout: self
+
+      - task: UsePythonVersion@0
+        inputs:
+          versionSpec: '3.12'
+          addToPath: true
+
+      - script: |
+          pip install fabric-cicd
+        displayName: 'Install fabric-cicd'
+
+      - task: AzureCLI@2
+        displayName: 'Deploy Workspace'
+        inputs:
+          azureSubscription: 'HelixData-SPNSecret-Prod'
+          scriptType: 'ps'
+          scriptLocation: 'inlineScript'
+          inlineScript: |
+            $branch = ${env:BUILD_SOURCEBRANCHNAME}
+            $item_type_in_scope = @("DataPipeline", "Notebook", "Lakehouse", "VariableLibrary")
+
+            if ($branch -eq 'dev') {
+              # Git Sync for Lowest Workspace
+              python -u $(Build.SourcesDirectory)/.deploy/sync_fabric_workspace.py `
+                --workspace_name "Helix-Dev-Eng" `
+            } elseif ($branch -eq 'main') {
+              # Deploy for Upper Workspaces
+              python -u $(Build.SourcesDirectory)/.deploy/deploy_fabric_workspace.py `
+                --workspace_name "Helix-Prod-Eng" `
+                --item_type_in_scope $item_type_in_scope `
+                --environment "prod"
+            }

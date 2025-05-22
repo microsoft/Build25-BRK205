@@ -1,0 +1,26 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/variableLibrary/definition/valueSet/1.0.0/schema.json",
+  "name": "prod",
+  "variableOverrides": [
+    {
+      "name": "operations_server",
+      "value": "x6eps4xrq2xudenlfv6naeo3i4-s7p3hhhr4rjunavnmh4jje57cq.database.fabric.microsoft.com"
+    },
+    {
+      "name": "operations_db",
+      "value": "Operations-e8ec3a23-91fe-447c-b793-86e4c0b73db4"
+    },
+    {
+      "name": "is_production",
+      "value": true
+    },
+    {
+      "name": "storage_workspace_id",
+      "value": "9cb3df97-e4f1-4653-82ad-61f89493bf14"
+    },
+    {
+      "name": "unified_lakehouse_id",
+      "value": "92d7dea8-843a-4151-b9c5-721847979776"
+    }
+  ]
+}

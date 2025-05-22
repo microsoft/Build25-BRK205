@@ -1,0 +1,14 @@
+[
+  {
+    "name": "DIM_Calendar",
+    "path": "/Tables",
+    "target": {
+      "type": "OneLake",
+      "oneLake": {
+        "path": "Tables/Dataprod/DIM_Calendar",
+        "itemId": "7b1741d0-647b-401a-9035-7f55da48199b",
+        "workspaceId": "4c33a979-76f8-49c4-b2d6-fd32e4d5648e"
+      }
+    }
+  }
+]

@@ -1,0 +1,237 @@
+{
+  "properties": {
+    "activities": [
+      {
+        "type": "Lookup",
+        "typeProperties": {
+          "source": {
+            "type": "DataWarehouseSource",
+            "partitionOption": "None",
+            "queryTimeout": "02:00:00"
+          },
+          "datasetSettings": {
+            "type": "DataWarehouseTable",
+            "typeProperties": {
+              "schema": "dbo",
+              "table": "notebooks"
+            },
+            "schema": [],
+            "linkedService": {
+              "name": "4f2eccfc_028e_4479_b92f_f74aa5868d86",
+              "properties": {
+                "type": "DataWarehouse",
+                "typeProperties": {
+                  "artifactId": "@variables('operations_db')",
+                  "endpoint": "@variables('operations_server')",
+                  "workspaceId": "@pipeline().DataFactory"
+                },
+                "annotations": []
+              }
+            },
+            "annotations": []
+          },
+          "firstRowOnly": false
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Get Notebooks",
+        "dependsOn": [
+          {
+            "activity": "Set operations_db",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          },
+          {
+            "activity": "Set operations_server",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "ForEach",
+        "typeProperties": {
+          "items": {
+            "value": "@activity('Get Notebooks').output.value",
+            "type": "Expression"
+          },
+          "activities": [
+            {
+              "type": "ExecutePipeline",
+              "typeProperties": {
+                "pipeline": {
+                  "referenceName": "d0d20c68-5e49-aa1a-4c40-3efcc5d43671",
+                  "type": "PipelineReference"
+                },
+                "parameters": {
+                  "workspace_id": {
+                    "value": "@pipeline().DataFactory",
+                    "type": "Expression"
+                  },
+                  "Item_type": "Notebook",
+                  "Item_name": {
+                    "value": "@item().notebook_name",
+                    "type": "Expression"
+                  }
+                },
+                "waitOnCompletion": true
+              },
+              "policy": {
+                "secureInput": false
+              },
+              "name": "Get Notebook Id",
+              "dependsOn": []
+            },
+            {
+              "type": "TridentNotebook",
+              "typeProperties": {
+                "notebookId": {
+                  "value": "@activity('Get Notebook Id').output.pipelineReturnValue.item_id",
+                  "type": "Expression"
+                },
+                "workspaceId": {
+                  "value": "@pipeline().DataFactory",
+                  "type": "Expression"
+                }
+              },
+              "policy": {
+                "timeout": "0.12:00:00",
+                "retry": 0,
+                "retryIntervalInSeconds": 30,
+                "secureInput": false,
+                "secureOutput": false
+              },
+              "name": "Run Notebook",
+              "dependsOn": [
+                {
+                  "activity": "Get Notebook Id",
+                  "dependencyConditions": [
+                    "Succeeded"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "IfCondition",
+              "typeProperties": {
+                "expression": {
+                  "value": "@variables('is_production')",
+                  "type": "Expression"
+                },
+                "ifTrueActivities": [
+                  {
+                    "type": "Wait",
+                    "typeProperties": {
+                      "waitTimeInSeconds": 1
+                    },
+                    "name": "Send Notification",
+                    "dependsOn": []
+                  }
+                ],
+                "ifFalseActivities": []
+              },
+              "name": "If Production",
+              "dependsOn": [
+                {
+                  "activity": "Run Notebook",
+                  "dependencyConditions": [
+                    "Failed"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "name": "For Each Notebook",
+        "dependsOn": [
+          {
+            "activity": "Get Notebooks",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "SetVariable",
+        "typeProperties": {
+          "variableName": "is_production",
+          "value": {
+            "value": "@equals(pipeline().DataFactory, '736ca819-08eb-458a-96d4-78fd8145ea4e')",
+            "type": "Expression"
+          }
+        },
+        "policy": {
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Set is_production",
+        "dependsOn": []
+      },
+      {
+        "type": "SetVariable",
+        "typeProperties": {
+          "variableName": "operations_db",
+          "value": {
+            "value": "@if(variables('is_production'),'Operations-e8ec3a23-91fe-447c-b793-86e4c0b73db4' ,'Operations-4f702ef1-548c-4668-893b-2d1670b4c475' )",
+            "type": "Expression"
+          }
+        },
+        "policy": {
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Set operations_db",
+        "dependsOn": [
+          {
+            "activity": "Set is_production",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "SetVariable",
+        "typeProperties": {
+          "variableName": "operations_server",
+          "value": {
+            "value": "@if(variables('is_production'), 'x6eps4xrq2xudenlfv6naeo3i4-s7p3hhhr4rjunavnmh4jje57cq.database.fabric.microsoft.com', 'x6eps4xrq2xudenlfv6naeo3i4-pgutgthyo3cetmww7uzojvlery.database.fabric.microsoft.com')",
+            "type": "Expression"
+          }
+        },
+        "policy": {
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Set operations_server",
+        "dependsOn": [
+          {
+            "activity": "Set is_production",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      }
+    ],
+    "variables": {
+      "is_production": {
+        "type": "Boolean"
+      },
+      "operations_db": {
+        "type": "String"
+      },
+      "operations_server": {
+        "type": "String"
+      }
+    }
+  }
+}
