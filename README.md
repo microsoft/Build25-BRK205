@@ -2,7 +2,7 @@
 <img src="img/banner.jpg" alt="decorative banner" width="1200"/>
 </p>
 
-# Build25 [BRK205] - [What's Coming in Fabric Automation and CI/CD]
+# Build25 BRK205 - What's Coming in Fabric Automation and CI/CD
 
 ## Description
 
@@ -19,7 +19,7 @@ Jacob Knightley
 |:-------------------|:----------------------------------|:-------------------|
 | Build session page | https://build.microsoft.com/sessions/BRK205 | Event session page with downloadable recording, slides, resources, and speaker bio |
 | Session recording on YouTube | https://aka.ms/build2025/video/BRK205 | YouTube page with session recoding and speaker-moderated chat |
-|Microsoft Learn|aka.ms/build25/plans/friendlyname<br>aka.ms/build25/collection/friendlyname|Official Collection or Plan with skilling resources to learn at your own pace|
+|Microsoft Learn|https://aka.ms/build25/plan/MicrosoftFabricDataEngineeringPlan|Official Collection or Plan with skilling resources to learn at your own pace|
 
 
 ## Contributing
